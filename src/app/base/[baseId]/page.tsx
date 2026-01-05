@@ -1,6 +1,6 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
-import { BaseTable } from "~/components/table/BaseTable";
+import { BasePageShell } from "~/components/layout/BasePage/BasePageShell";
 
 export default async function BasePage() {
   const session = await auth();
@@ -9,9 +9,5 @@ export default async function BasePage() {
     redirect("/login");
   }
 
-  return (
-    <div className="flex flex-col h-full">
-      <BaseTable />
-    </div>
-  );
+  return <BasePageShell />;
 }
