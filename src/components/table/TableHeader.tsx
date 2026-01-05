@@ -1,8 +1,9 @@
 import { flexRender } from "@tanstack/react-table";
 import { useTableContext } from "./TableContext";
+import type { Row } from "./mockTableData";
 
 export function TableHeader() {
-  const { table } = useTableContext<any>();
+  const { table } = useTableContext<Row>();
 
   // Columns currently sorted (for blue highlight)
   const sortedColumnIds = table.getState().sorting.map(s => s.id);
