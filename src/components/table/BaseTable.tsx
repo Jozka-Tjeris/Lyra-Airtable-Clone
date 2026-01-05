@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -19,6 +19,31 @@ export function BaseTable() {
   // -----------------------------
   const [data, setData] = useState<Row[]>(rows);
   const [columnsState, setColumnsState] = useState<typeof columnMeta>(columnMeta);
+  const cellRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const registerRef = (id: string, el: HTMLDivElement | null) => {
+    cellRefs.current[id] = el;
+  };
+
+  // Detect clicks ouside grid
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // If the click is NOT inside the table container, deactivate the cell
+      if (
+        tableContainerRef.current && 
+        !tableContainerRef.current.contains(event.target as Node)
+      ) {
+        setActiveCell(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // -----------------------------
   // Track the currently active cell
@@ -26,6 +51,16 @@ export function BaseTable() {
   const [activeCell, setActiveCell] = useState<{ rowIndex: number; columnId: string } | null>(
     null
   );
+
+  useEffect(() => {
+    if (!activeCell) return;
+
+    const key = `${activeCell.rowIndex}-${activeCell.columnId}`;
+    const el = cellRefs.current[key];
+    if (el && document.activeElement !== el) {
+      el.focus();
+    }
+  }, [activeCell, data]);
 
   // -----------------------------
   // Function to update a single cell
@@ -48,37 +83,62 @@ export function BaseTable() {
   };
 
   // -----------------------------
+  // Navigation helper
+  // -----------------------------
+  const moveToCell = (rowIndex: number, colIndex: number) => {
+    if (
+      rowIndex < 0 ||
+      rowIndex >= data.length ||
+      colIndex < 0 ||
+      colIndex >= columnsState.length
+    )
+      return;
+
+    console.log("hey there", rowIndex, colIndex);
+
+    const columnId = columnsState[colIndex]!.id;
+    setActiveCell({ rowIndex, columnId });
+  };
+
+  // -----------------------------
   // Columns for TanStack Table
   // -----------------------------
   const tableColumns: ColumnDef<Row>[] = useMemo(
     () =>
-      columnsState.map(col => ({
+      columnsState.map((col, colIndex) => ({
         accessorKey: col.id,
         header: col.label,
-        cell: info => (
-          <TableCell
-            value={
-              typeof info.getValue() === "string" || typeof info.getValue() === "number"
-                ? String(info.getValue())
-                : ""
-            }
-            isActive={
-              activeCell?.rowIndex === info.row.index && activeCell?.columnId === info.column.id
-            }
-            onClick={() =>
-              setActiveCell({ rowIndex: info.row.index, columnId: info.column.id })
-            }
-            onChange={newValue =>
-              info.table.options.meta?.updateCell(info.row.index, info.column.id, newValue)
-            }
-          />
-        ),
+        cell: info => {
+          const rowIndex = info.row.index;
+          const columnId = info.column.id;
+
+          return (
+            <TableCell
+              value={
+                typeof info.getValue() === "string" || typeof info.getValue() === "number"
+                  ? String(info.getValue())
+                  : ""
+              }
+              isActive={activeCell?.rowIndex === rowIndex && activeCell?.columnId === columnId}
+              onClick={() => setActiveCell({ rowIndex, columnId })}
+              onChange={newValue =>
+                info.table.options.meta?.updateCell(rowIndex, columnId, newValue)
+              }
+              onMoveNext={() => moveToCell(rowIndex, colIndex + 1)}
+              onMovePrev={() => moveToCell(rowIndex, colIndex - 1)}
+              onMoveUp={() => moveToCell(rowIndex - 1, colIndex)}
+              onMoveDown={() => moveToCell(rowIndex + 1, colIndex)}
+              cellId={`${rowIndex}-${columnId}`}
+              registerRef={registerRef}
+            />
+          );
+        },
         enableResizing: true,
         size: 150,
         minSize: 80,
         maxSize: 300,
       })),
-    [columnsState, activeCell]
+    [columnsState, activeCell, data]
   );
 
   // -----------------------------
@@ -103,7 +163,7 @@ export function BaseTable() {
   // -----------------------------
   return (
     <TableContext.Provider value={{ table } as TableContextType<unknown>}>
-      <div className="w-full overflow-x-auto border">
+      <div ref={tableContainerRef} className="w-full overflow-x-auto border">
         <div className="max-h-[calc(100vh-136px)] overflow-y-auto">
           <table className="border-collapse table-auto w-max">
             <TableHeader />
