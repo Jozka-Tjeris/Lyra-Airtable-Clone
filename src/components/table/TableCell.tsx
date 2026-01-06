@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef, memo } from "react";
+import { type CellValue } from "./mockTableData";
 
 type TableCellProps = {
-  value: string;
-  onChange: (newValue: string) => void;
+  value: CellValue;
+  onChange: (newValue: CellValue) => void;
   onClick: () => void; // notify parent that this cell is active
   isActive?: boolean;
   onMoveNext?: () => void; // Tab / ArrowRight
@@ -40,6 +41,14 @@ export const TableCell = memo(function TableCell({
     return () => registerRef?.(cellId, null);
   }, [cellId, registerRef]);
 
+  useEffect(() => {
+    // If we just stopped editing and this cell is the active one,
+    // return focus to the div so keyboard navigation continues working.
+    if (!isEditing && isActive) {
+      divRef.current?.focus();
+    }
+  }, [isEditing, isActive]);
+
   const commit = () => {
     if (!isEditing) return;
     setIsEditing(false);
@@ -61,9 +70,6 @@ export const TableCell = memo(function TableCell({
       else if (e.key === "Escape") {
         e.preventDefault();
         cancel(); 
-        setTimeout(() => {
-          divRef.current?.focus();
-        }, 0);
       } 
       else if (e.key === "Tab") {
         e.preventDefault();
@@ -123,17 +129,7 @@ export const TableCell = memo(function TableCell({
         onClick={handleClick}
         onKeyDown={handleKeyDown}
       >
-        {isEditing ? (
-          <input 
-            autoFocus 
-            value={localValue} 
-            onBlur={commit}
-            onChange={(e) => setLocalValue(e.target.value)}
-            className="w-full outline-none" 
-          />
-        ) : (
-          value
-        )}
+        {value}
       </div>
     );
   }, (prevProps, nextProps) => {

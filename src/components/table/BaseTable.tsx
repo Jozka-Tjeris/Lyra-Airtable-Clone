@@ -11,154 +11,190 @@ import { TableHeader } from "./TableHeader";
 import { TableBody } from "./TableBody";
 import { TableCell } from "./TableCell";
 
-import { columns as columnMeta, rows, type Row } from "./mockTableData";
+import {
+  columns as initialColumns,
+  rows as initialRows,
+  cells as initialCells,
+  type Column,
+  type Row,
+  type CellMap,
+  type CellValue,
+  type CellKey
+} from "./mockTableData";
+
+// --------------------------------------------
+// Helpers
+// --------------------------------------------
+type ActiveCell = {
+  rowId: string;
+  columnId: string;
+} | null;
+
+type TableRow = {
+  id: string;
+} & Record<string, CellValue>;
+
 
 export function BaseTable() {
-  // -----------------------------
-  // Dynamic state for rows & columns
-  // -----------------------------
-  const [data, setData] = useState<Row[]>(rows);
-  const [columnsState, setColumnsState] = useState<typeof columnMeta>(columnMeta);
-  const cellRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  // --------------------------------------------
+  // Core grid state (UI-owned, not TanStack-owned)
+  // --------------------------------------------
+  const [rows] = useState<Row[]>(initialRows);
+  const [columns, setColumns] = useState<Column[]>(initialColumns);
+  const [cells, setCells] = useState<CellMap>(initialCells);
 
-  // Detect clicks ouside grid
+  // --------------------------------------------
+  // Active cell + refs (for focus management)
+  // --------------------------------------------
+  const [activeCell, setActiveCell] = useState<ActiveCell>(null);
+  const cellRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
+  // --------------------------------------------
+  // Click outside → deactivate cell
+  // --------------------------------------------
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // If the click is NOT inside the table container, deactivate the cell
+    const handleClickOutside = (e: MouseEvent) => {
       if (
-        tableContainerRef.current && 
-        !tableContainerRef.current.contains(event.target as Node)
+        tableContainerRef.current &&
+        !tableContainerRef.current.contains(e.target as Node)
       ) {
         setActiveCell(null);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // -----------------------------
-  // Track the currently active cell
-  // -----------------------------
-  const [activeCell, setActiveCell] = useState<{ rowIndex: number; columnId: string } | null>(
-    null
-  );
-
+  // --------------------------------------------
+  // Focus active cell when it changes
+  // --------------------------------------------
   useEffect(() => {
     if (!activeCell) return;
 
-    const key = `${activeCell.rowIndex}-${activeCell.columnId}`;
+    const key = `${activeCell.rowId}:${activeCell.columnId}`;
     const el = cellRefs.current[key];
     if (el && document.activeElement !== el) {
       el.focus();
     }
-  }, [activeCell, data]);
+  }, [activeCell]);
 
-  // -----------------------------
-  // Function to update a single cell
-  // -----------------------------
-  const updateCell = useCallback((rowIndex: number, columnId: string, value: string) => {
-    setData(old =>
-      old.map((row, i) => (i === rowIndex ? { ...row, [columnId]: value } : row))
-    );
-  }, []); // Empty deps because it uses the functional update 'old => ...'
+  const registerRef = useCallback(
+    (id: string, el: HTMLDivElement | null) => {
+      cellRefs.current[id] = el;
+    },
+    []
+  );
 
-  const registerRef = useCallback((id: string, el: HTMLDivElement | null) => {
-    cellRefs.current[id] = el;
-  }, []);
+  // --------------------------------------------
+  // Cell updates (single source of truth)
+  // --------------------------------------------
+  const updateCell = useCallback(
+    (rowId: string, columnId: string, value: CellValue) => {
+      const key = `${rowId}:${columnId}`;
+      setCells(prev => ({
+        //Keep previous elements in to preserve structure
+        ...prev,
+        //Add new cell right after previous elements
+        [key]: value,
+      }));
+    },
+    []
+  );
 
-  // -----------------------------
-  // Dynamic column functions
-  // -----------------------------
-  const addColumn = (id: keyof Row, label: string) => {
-    setColumnsState(old => [...old, { id, label }]);
-  };
+  // --------------------------------------------
+  // Navigation helpers (index → id translation)
+  // --------------------------------------------
+  const moveToCell = useCallback(
+    (rowIndex: number, colIndex: number) => {
+      if (
+        rowIndex < 0 ||
+        rowIndex >= rows.length ||
+        colIndex < 0 ||
+        colIndex >= columns.length
+      ) {
+        return;
+      }
 
-  const removeColumn = (id: keyof Row) => {
-    setColumnsState(old => old.filter(col => col.id !== id));
-  };
+      const rowId = rows[rowIndex]!.id;
+      const columnId = columns[colIndex]!.id;
+      setActiveCell({ rowId, columnId });
+    },
+    [rows, columns]
+  );
 
-  // -----------------------------
-  // Navigation helper
-  // -----------------------------
-  const moveToCell = useCallback((rowIndex: number, colIndex: number) => {
-    if (
-      rowIndex < 0 ||
-      rowIndex >= data.length ||
-      colIndex < 0 ||
-      colIndex >= columnsState.length
-    )
-      return;
+  // --------------------------------------------
+  // Derived table data for TanStack
+  // --------------------------------------------
+  const tableData = useMemo<TableRow[]>(() => {
+    return rows.map(row => {
+      const record: TableRow = { id: row.id };
 
-    const columnId = columnsState[colIndex]!.id;
-    setActiveCell({ rowIndex, columnId });
-  }, [data.length, columnsState]);
+      for (const col of columns) {
+        record[col.id] = cells[`${row.id}:${col.id}`] ?? "";
+      }
 
-  // -----------------------------
-  // Columns for TanStack Table
-  // -----------------------------
-  const tableColumns: ColumnDef<Row>[] = useMemo(
+      return record;
+    });
+  }, [rows, columns, cells]);
+
+
+  // --------------------------------------------
+  // Column definitions (TanStack-facing)
+  // --------------------------------------------
+  const tableColumns: ColumnDef<TableRow>[] = useMemo(
     () =>
-      columnsState.map((col, colIndex) => ({
+      columns.map((col, colIndex) => ({
+        id: col.id,
         accessorKey: col.id,
         header: col.label,
+        size: col.width ?? 150,
+        minSize: 80,
+        maxSize: 300,
+        enableResizing: true,
         cell: info => {
           const rowIndex = info.row.index;
-          const columnId = info.column.id;
+          const rowId = info.row.original.id;
+          const columnId = col.id;
+          const cellKey: CellKey = `${rowId}:${columnId}`;
 
           return (
             <TableCell
-              value={
-                typeof info.getValue() === "string" || typeof info.getValue() === "number"
-                  ? String(info.getValue())
-                  : ""
+              cellId={cellKey}
+              value={cells[cellKey] ?? ""}
+              isActive={
+                activeCell?.rowId === rowId &&
+                activeCell?.columnId === columnId
               }
-              isActive={activeCell?.rowIndex === rowIndex && activeCell?.columnId === columnId}
-              onClick={() => setActiveCell({ rowIndex, columnId })}
-              onChange={newValue =>
-                info.table.options.meta?.updateCell(rowIndex, columnId, newValue)
-              }
+              onClick={() => setActiveCell({ rowId, columnId })}
+              onChange={value => updateCell(rowId, columnId, value)}
               onMoveNext={() => moveToCell(rowIndex, colIndex + 1)}
               onMovePrev={() => moveToCell(rowIndex, colIndex - 1)}
               onMoveUp={() => moveToCell(rowIndex - 1, colIndex)}
               onMoveDown={() => moveToCell(rowIndex + 1, colIndex)}
-              cellId={`${rowIndex}-${columnId}`}
               registerRef={registerRef}
             />
           );
         },
-        enableResizing: true,
-        size: 150,
-        minSize: 80,
-        maxSize: 300,
       })),
-    [columnsState, activeCell, moveToCell, registerRef]
+    [columns, cells, activeCell, moveToCell, updateCell, registerRef]
   );
 
-  // -----------------------------
-  // Create the table instance
-  // -----------------------------
+  // --------------------------------------------
+  // TanStack table instance
+  // --------------------------------------------
   const table = useReactTable({
-    data,
+    data: tableData,
     columns: tableColumns,
-    columnResizeMode: "onChange",
-    enableColumnResizing: true,
-    defaultColumn: { size: 150 },
     getCoreRowModel: getCoreRowModel(),
-    meta: {
-      updateCell,
-      addColumn,
-      removeColumn,
-    },
+    columnResizeMode: "onChange",
+    defaultColumn: { size: 150 },
   });
 
-  // -----------------------------
+  // --------------------------------------------
   // Render
-  // -----------------------------
+  // --------------------------------------------
   return (
     <TableContext.Provider value={{ table } as TableContextType<unknown>}>
       <div ref={tableContainerRef} className="w-full overflow-x-auto border">
