@@ -81,7 +81,6 @@ export function BaseTable() {
       id: newId,
       order: table.getRowCount()
     };
-    console.log(newRow);
     
     setRows(prev => [...prev, newRow]);
     //Initialize cells for this row

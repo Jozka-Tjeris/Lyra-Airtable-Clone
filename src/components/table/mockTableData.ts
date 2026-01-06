@@ -27,7 +27,7 @@ export type TableRow = {
 } & Record<string, CellValue>;
 
 // ===== Mock Rows =====
-export const rows: TableRow[] = Array.from({ length: 25 }, (_, i) => ({
+export const rows: TableRow[] = Array.from({ length: 0 }, (_, i) => ({
   id: `row-${i}`,
   order: i
 }));
