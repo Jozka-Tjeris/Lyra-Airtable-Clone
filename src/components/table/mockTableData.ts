@@ -27,7 +27,7 @@ export type TableRow = {
 } & Record<string, CellValue>;
 
 // ===== Mock Rows =====
-export const rows: TableRow[] = Array.from({ length: 0 }, (_, i) => ({
+export const rows: TableRow[] = Array.from({ length: 3 }, (_, i) => ({
   id: `row-${i}`,
   order: i
 }));
@@ -65,7 +65,7 @@ export function fromCellKey(key: CellKey): CellAddress {
 export const cells: CellMap = Object.fromEntries(
   rows.flatMap((row, i) => [
     [`${row.id}:name`,   `Task ${i + 1}`],
-    [`${row.id}:status`, "In progress"],
+    [`${row.id}:status`, (i%2 === 0) ? "In progress" : "Not in progress"],
     [`${row.id}:owner`,  "Alex"],
   ])
 );

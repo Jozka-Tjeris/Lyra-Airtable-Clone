@@ -97,7 +97,7 @@ export function TableHeader() {
                       >
                         <span
                           className="cursor-pointer hover:underline flex items-center"
-                          onClick={() => header.column.getToggleSortingHandler()?.("")}
+                          onClick={header.column.getToggleSortingHandler()}
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {header.column.getIsSorted() === "asc"
@@ -111,7 +111,25 @@ export function TableHeader() {
                       {/* Filter button top-right */}
                       <button
                         className="absolute top-1 right-2 text-gray-400 hover:text-gray-700"
-                        onClick={() => console.log("Filter clicked for:", columnId)}
+                        onClick={() => {
+                          // Check if this column is already filtered
+                          const existingFilter = table.getState().columnFilters.find(f => f.id === columnId);
+
+                          if (existingFilter) {
+                            // Second click, remove the filter
+                            table.setColumnFilters(
+                              table.getState().columnFilters.filter(f => f.id !== columnId)
+                            );
+                            console.log(`Cleared filter for column: ${columnId}`);
+                          } else {
+                            // First click, apply the filter
+                            table.setColumnFilters([
+                              ...table.getState().columnFilters,
+                              { id: columnId, value: "Not" },
+                            ]);
+                            console.log(`Applied filter for column: ${columnId}`);
+                          }
+                        }}
                       >
                         ⏺
                       </button>

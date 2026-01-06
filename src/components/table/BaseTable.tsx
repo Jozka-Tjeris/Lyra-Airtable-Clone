@@ -5,6 +5,10 @@ import {
   useReactTable,
   getCoreRowModel,
   type ColumnDef,
+  type SortingState,
+  type ColumnFiltersState,
+  getFilteredRowModel,
+  getSortedRowModel
 } from "@tanstack/react-table";
 import { TableContext, type TableContextType } from "./TableContext";
 import { TableHeader } from "./TableHeader";
@@ -40,73 +44,8 @@ export function BaseTable() {
   const [rows, setRows] = useState<Row[]>(initialRows);
   const [columns, setColumns] = useState<Column[]>(initialColumns);
   const [cells, setCells] = useState<CellMap>(initialCells);
-
-  //Modifying columns
-  const handleAddColumn = useCallback(() => {
-    const newId = `col_${crypto.randomUUID()}`;
-    const newColumn: Column = {
-      id: newId,
-      label: "New Column",
-      width: 150,
-      type: "text" //default is text for now
-    };
-    
-    setColumns((prev) => [...prev, newColumn]);
-  }, []);
-
-  const handleDeleteColumn = useCallback((columnId: string) => {
-    setColumns(prev => prev.filter(col => col.id !== columnId));
-
-    // Also remove cells associated with that column
-    setCells(prev => {
-      const updated: CellMap = {};
-      Object.entries(prev).forEach(([key, value]: [string, CellValue]) => {
-        const { columnId: col } = fromCellKey(key as CellKey);
-        if (col !== columnId) updated[key as CellKey] = value;
-      });
-      return updated;
-    });
-  }, []);
-
-  const handleRenameColumn = useCallback((columnId: string, newLabel: string) => {
-    setColumns(prev =>
-      prev.map(col => (col.id === columnId ? { ...col, label: newLabel } : col))
-    );
-  }, []);
-
-  //Modifying Rows
-  const handleAddRow = useCallback(() => {
-    const newId = `row-${crypto.randomUUID()}`;
-    const newRow: TableRow = {
-      id: newId,
-      order: table.getRowCount()
-    };
-    
-    setRows(prev => [...prev, newRow]);
-    //Initialize cells for this row
-    setCells(prev => {
-      const newCells = { ...prev };
-      columns.forEach(col => {
-        const key = `${newId}:${col.id}`;
-        newCells[key as CellKey] = ""; // default empty
-      });
-      return newCells;
-    });
-  }, []);
-
-  const handleDeleteRow = useCallback((rowId: string) => {
-    setRows(prev => prev.filter(row => row.id !== rowId));
-
-    // Also remove cells associated with that column
-    setCells(prev => {
-      const updated: CellMap = {};
-      Object.entries(prev).forEach(([key, value]: [string, CellValue]) => {
-        const { rowId: row } = fromCellKey(key as CellKey);
-        if (row !== rowId) updated[key as CellKey] = value;
-      });
-      return updated;
-    });
-  }, []);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   // --------------------------------------------
   // Active cell + refs (for focus management)
@@ -220,6 +159,10 @@ export function BaseTable() {
         id: col.id,
         accessorKey: col.id,
         header: col.label,
+        enableColumnFilter: true,
+        filterFn: col.type === "number"
+        ? "inNumberRange"
+        : "includesString",
         size: col.width ?? 150,
         minSize: 80,
         maxSize: 300,
@@ -261,7 +204,89 @@ export function BaseTable() {
     getCoreRowModel: getCoreRowModel(),
     columnResizeMode: "onChange",
     defaultColumn: { size: 150 },
+    state: {
+      sorting,
+      columnFilters
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    //Removed later when adding manualFiltering: true
+    getFilteredRowModel: getFilteredRowModel(),
+    //Removed later when adding manualSorting: true
+    getSortedRowModel: getSortedRowModel(),
+    /*
+    //Remove top line eventually
+    manualSorting: true
+    getSortedRowModel: undefined
+    */
   });
+
+  //Modifying columns
+  const handleAddColumn = useCallback(() => {
+    const newId = `col_${crypto.randomUUID()}`;
+    const newColumn: Column = {
+      id: newId,
+      label: "New Column",
+      width: 150,
+      type: "text" //default is text for now
+    };
+    
+    setColumns((prev) => [...prev, newColumn]);
+  }, []);
+
+  const handleDeleteColumn = useCallback((columnId: string) => {
+    setColumns(prev => prev.filter(col => col.id !== columnId));
+
+    // Also remove cells associated with that column
+    setCells(prev => {
+      const updated: CellMap = {};
+      Object.entries(prev).forEach(([key, value]: [string, CellValue]) => {
+        const { columnId: col } = fromCellKey(key as CellKey);
+        if (col !== columnId) updated[key as CellKey] = value;
+      });
+      return updated;
+    });
+  }, []);
+
+  const handleRenameColumn = useCallback((columnId: string, newLabel: string) => {
+    setColumns(prev =>
+      prev.map(col => (col.id === columnId ? { ...col, label: newLabel } : col))
+    );
+  }, []);
+
+  //Modifying Rows
+  const handleAddRow = useCallback(() => {
+    const newId = `row-${crypto.randomUUID()}`;
+    const newRow: TableRow = {
+      id: newId,
+      order: table.getRowCount()
+    };
+    
+    setRows(prev => [...prev, newRow]);
+    //Initialize cells for this row
+    setCells(prev => {
+      const newCells = { ...prev };
+      columns.forEach(col => {
+        const key = `${newId}:${col.id}`;
+        newCells[key as CellKey] = ""; // default empty
+      });
+      return newCells;
+    });
+  }, [columns, table]);
+
+  const handleDeleteRow = useCallback((rowId: string) => {
+    setRows(prev => prev.filter(row => row.id !== rowId));
+
+    // Also remove cells associated with that column
+    setCells(prev => {
+      const updated: CellMap = {};
+      Object.entries(prev).forEach(([key, value]: [string, CellValue]) => {
+        const { rowId: row } = fromCellKey(key as CellKey);
+        if (row !== rowId) updated[key as CellKey] = value;
+      });
+      return updated;
+    });
+  }, []);
 
   // --------------------------------------------
   // Render
