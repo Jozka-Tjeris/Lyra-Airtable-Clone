@@ -1,31 +1,26 @@
 "use client";
 
-import { useRef, useEffect } from "react";
 import { useTableController } from "@/components/table/controller/TableProvider";
 import { TableHeader } from "./TableHeader";
 import { TableBody } from "./TableBody";
 
 export function BaseTable() {
-  const { activeCell, sorting } = useTableController();
-
-  const tableContainerRef = useRef<HTMLDivElement>(null);
-
-  // Inside BaseTable.tsx
-  const activeCellRef = useRef(activeCell);
-
-  // Keep the ref in sync
-  useEffect(() => {
-    activeCellRef.current = activeCell;
-  }, [activeCell]);
+  const { sorting } = useTableController();
 
   return (
-    <div ref={tableContainerRef} className="w-full overflow-x-auto border" style={{ overscrollBehavior: "contain" }}>
-      <div className="max-h-[calc(100vh-136px)] overflow-y-auto" style={{ overscrollBehavior: "contain" }}>
-        <table className="table-auto border-collapse w-max">
-          <TableHeader key={JSON.stringify(sorting)}/>
-          <TableBody />
-        </table>
-      </div>
+    /* The parent (MainContent) handles the vertical scroll.
+       This div only handles the horizontal scroll for when 
+       the table is wider than the screen.
+    */
+    <div className="w-max overflow-x-auto">
+      <table 
+        className="table-fixed border-collapse w-max min-w-full" 
+        style={{ width: "max-content" }}
+      >
+        {/* We keep the key on sorting so the header re-renders instantly */}
+        <TableHeader key={JSON.stringify(sorting)}/>
+        <TableBody />
+      </table>
     </div>
   );
 }

@@ -29,6 +29,9 @@ export type TableProviderState = {
   columnFilters: ColumnFiltersState;
   columnSizing: ColumnSizingState;
   table: ReturnType<typeof useReactTable>;
+
+  headerHeight: number;
+  setHeaderHeight: (height: number) => void;
 };
 
 const TableContext = createContext<TableProviderState | undefined>(undefined);
@@ -58,6 +61,8 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+
+  const [headerHeight, setHeaderHeight] = useState(40);
 
   // -----------------------
   // Cell refs for keyboard navigation
@@ -252,8 +257,10 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
     table,
     sorting,
     columnFilters,
-    columnSizing
-  }), [rows, columns, cells, activeCell, globalSearch, columnFilters, columnSizing, table, sorting,
+    columnSizing,
+    headerHeight,
+    setHeaderHeight
+  }), [rows, columns, cells, activeCell, globalSearch, columnFilters, columnSizing, table, sorting, headerHeight,
     handleAddColumn, handleAddRow, handleDeleteColumn, handleDeleteRow, handleRenameColumn, registerRef, updateCell]);
 
   return (

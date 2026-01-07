@@ -5,9 +5,8 @@ import { flexRender } from "@tanstack/react-table";
 import { useTableController } from "@/components/table/controller/TableProvider";
 
 export function TableHeader() {
-  const { table, handleAddColumn, handleDeleteColumn, handleRenameColumn } = useTableController();
+  const { table, handleAddColumn, handleDeleteColumn, handleRenameColumn, headerHeight, setHeaderHeight } = useTableController();
   const headerGroups = table.getHeaderGroups();
-  const [headerHeight, setHeaderHeight] = useState(40);
 
   // -----------------------------
   // Vertical Resize Logic
@@ -29,7 +28,7 @@ export function TableHeader() {
 
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-  }, [headerHeight]);
+  }, [headerHeight, setHeaderHeight]);
 
   // -----------------------------
   // Handlers

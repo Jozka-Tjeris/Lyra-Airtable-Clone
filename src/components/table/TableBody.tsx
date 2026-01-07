@@ -68,7 +68,7 @@ export function TableBody() {
       {table.getRowModel().rows.map((row) => (
         <tr
           key={row.id}
-          className="border-b last:border-0 hover:bg-[#f0f0f0]"
+          className="border-b last:border-0 hover:bg-[#f0f0f0] h-10"
           onContextMenu={(e) => {const rowOriginal = row.original as TableRow;
             e.preventDefault();
             e.stopPropagation();

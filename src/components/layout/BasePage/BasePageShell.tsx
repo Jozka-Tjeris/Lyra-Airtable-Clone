@@ -15,13 +15,13 @@ export function BasePageShell() {
     >
       <div className="flex flex-row h-screen w-full overflow-hidden">
       <LeftBar />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 min-h-0">
         <TopBar />
         <TableSelectionBar />
         <GridViewBar />
-        <div className="flex flex-row flex-1 min-w-0">
+        <div className="flex flex-row flex-1 min-w-0 min-h-0">
           <ViewSelectorBar />
-          <main className="flex-1 min-w-0 overflow-auto">
+          <main className="flex-1 min-w-0 min-h-0">
               <MainContent/>
             </main>
         </div>
