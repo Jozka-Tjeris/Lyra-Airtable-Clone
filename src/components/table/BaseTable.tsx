@@ -37,7 +37,11 @@ type ActiveCell = {
   columnId: string;
 } | null;
 
-export function BaseTable({ globalSearch }: { globalSearch: string }) {
+type BaseTableProps = {
+  globalSearch?: string;
+};
+
+export function BaseTable({ globalSearch = "" }: BaseTableProps) {
   // --------------------------------------------
   // Core grid state (UI-owned, not TanStack-owned)
   // --------------------------------------------
@@ -138,7 +142,17 @@ export function BaseTable({ globalSearch }: { globalSearch: string }) {
   // Derived table data for TanStack
   // --------------------------------------------
   const tableData = useMemo<TableRow[]>(() => {
-    return visibleRows.map((row, idx) => {
+    const search = globalSearch.trim().toLowerCase();
+
+    return visibleRows.filter(row => {
+      if(!search) true;
+
+      return columns.some(col => {
+        const value = cells[`${row.id}:${col.id}`];
+        if (value == null) return false;
+        return String(value).toLowerCase().includes(search);
+      })
+    }).map((row, idx) => {
       const record: TableRow = { id: row.id, order: idx};
 
       for (const col of columns) {
@@ -147,7 +161,7 @@ export function BaseTable({ globalSearch }: { globalSearch: string }) {
 
       return record;
     });
-  }, [visibleRows, columns, cells]);
+  }, [visibleRows, columns, cells, globalSearch]);
 
 
   // --------------------------------------------
