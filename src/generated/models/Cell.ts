@@ -207,6 +207,7 @@ export type CellOrderByWithRelationInput = {
 
 export type CellWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  rowId_columnId?: Prisma.CellRowIdColumnIdCompoundUniqueInput
   AND?: Prisma.CellWhereInput | Prisma.CellWhereInput[]
   OR?: Prisma.CellWhereInput[]
   NOT?: Prisma.CellWhereInput | Prisma.CellWhereInput[]
@@ -217,7 +218,7 @@ export type CellWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Cell"> | Date | string
   row?: Prisma.XOR<Prisma.RowScalarRelationFilter, Prisma.RowWhereInput>
   column?: Prisma.XOR<Prisma.ColumnScalarRelationFilter, Prisma.ColumnWhereInput>
-}, "id">
+}, "id" | "rowId_columnId">
 
 export type CellOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -312,6 +313,11 @@ export type CellListRelationFilter = {
 
 export type CellOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type CellRowIdColumnIdCompoundUniqueInput = {
+  rowId: string
+  columnId: string
 }
 
 export type CellCountOrderByAggregateInput = {

@@ -20,12 +20,23 @@ export type RowModel = runtime.Types.Result.DefaultSelection<Prisma.$RowPayload>
 
 export type AggregateRow = {
   _count: RowCountAggregateOutputType | null
+  _avg: RowAvgAggregateOutputType | null
+  _sum: RowSumAggregateOutputType | null
   _min: RowMinAggregateOutputType | null
   _max: RowMaxAggregateOutputType | null
 }
 
+export type RowAvgAggregateOutputType = {
+  order: number | null
+}
+
+export type RowSumAggregateOutputType = {
+  order: number | null
+}
+
 export type RowMinAggregateOutputType = {
   id: string | null
+  order: number | null
   tableId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -33,6 +44,7 @@ export type RowMinAggregateOutputType = {
 
 export type RowMaxAggregateOutputType = {
   id: string | null
+  order: number | null
   tableId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -40,6 +52,7 @@ export type RowMaxAggregateOutputType = {
 
 export type RowCountAggregateOutputType = {
   id: number
+  order: number
   tableId: number
   createdAt: number
   updatedAt: number
@@ -47,8 +60,17 @@ export type RowCountAggregateOutputType = {
 }
 
 
+export type RowAvgAggregateInputType = {
+  order?: true
+}
+
+export type RowSumAggregateInputType = {
+  order?: true
+}
+
 export type RowMinAggregateInputType = {
   id?: true
+  order?: true
   tableId?: true
   createdAt?: true
   updatedAt?: true
@@ -56,6 +78,7 @@ export type RowMinAggregateInputType = {
 
 export type RowMaxAggregateInputType = {
   id?: true
+  order?: true
   tableId?: true
   createdAt?: true
   updatedAt?: true
@@ -63,6 +86,7 @@ export type RowMaxAggregateInputType = {
 
 export type RowCountAggregateInputType = {
   id?: true
+  order?: true
   tableId?: true
   createdAt?: true
   updatedAt?: true
@@ -107,6 +131,18 @@ export type RowAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: RowAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: RowSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: RowMinAggregateInputType
@@ -137,16 +173,21 @@ export type RowGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
   take?: number
   skip?: number
   _count?: RowCountAggregateInputType | true
+  _avg?: RowAvgAggregateInputType
+  _sum?: RowSumAggregateInputType
   _min?: RowMinAggregateInputType
   _max?: RowMaxAggregateInputType
 }
 
 export type RowGroupByOutputType = {
   id: string
+  order: number
   tableId: string
   createdAt: Date
   updatedAt: Date
   _count: RowCountAggregateOutputType | null
+  _avg: RowAvgAggregateOutputType | null
+  _sum: RowSumAggregateOutputType | null
   _min: RowMinAggregateOutputType | null
   _max: RowMaxAggregateOutputType | null
 }
@@ -171,6 +212,7 @@ export type RowWhereInput = {
   OR?: Prisma.RowWhereInput[]
   NOT?: Prisma.RowWhereInput | Prisma.RowWhereInput[]
   id?: Prisma.StringFilter<"Row"> | string
+  order?: Prisma.IntFilter<"Row"> | number
   tableId?: Prisma.StringFilter<"Row"> | string
   createdAt?: Prisma.DateTimeFilter<"Row"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Row"> | Date | string
@@ -180,6 +222,7 @@ export type RowWhereInput = {
 
 export type RowOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  order?: Prisma.SortOrder
   tableId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -192,6 +235,7 @@ export type RowWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.RowWhereInput | Prisma.RowWhereInput[]
   OR?: Prisma.RowWhereInput[]
   NOT?: Prisma.RowWhereInput | Prisma.RowWhereInput[]
+  order?: Prisma.IntFilter<"Row"> | number
   tableId?: Prisma.StringFilter<"Row"> | string
   createdAt?: Prisma.DateTimeFilter<"Row"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Row"> | Date | string
@@ -201,12 +245,15 @@ export type RowWhereUniqueInput = Prisma.AtLeast<{
 
 export type RowOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  order?: Prisma.SortOrder
   tableId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RowCountOrderByAggregateInput
+  _avg?: Prisma.RowAvgOrderByAggregateInput
   _max?: Prisma.RowMaxOrderByAggregateInput
   _min?: Prisma.RowMinOrderByAggregateInput
+  _sum?: Prisma.RowSumOrderByAggregateInput
 }
 
 export type RowScalarWhereWithAggregatesInput = {
@@ -214,6 +261,7 @@ export type RowScalarWhereWithAggregatesInput = {
   OR?: Prisma.RowScalarWhereWithAggregatesInput[]
   NOT?: Prisma.RowScalarWhereWithAggregatesInput | Prisma.RowScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Row"> | string
+  order?: Prisma.IntWithAggregatesFilter<"Row"> | number
   tableId?: Prisma.StringWithAggregatesFilter<"Row"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Row"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Row"> | Date | string
@@ -221,6 +269,7 @@ export type RowScalarWhereWithAggregatesInput = {
 
 export type RowCreateInput = {
   id?: string
+  order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   table: Prisma.TableCreateNestedOneWithoutRowsInput
@@ -229,6 +278,7 @@ export type RowCreateInput = {
 
 export type RowUncheckedCreateInput = {
   id?: string
+  order?: number
   tableId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -237,6 +287,7 @@ export type RowUncheckedCreateInput = {
 
 export type RowUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   table?: Prisma.TableUpdateOneRequiredWithoutRowsNestedInput
@@ -245,6 +296,7 @@ export type RowUpdateInput = {
 
 export type RowUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   tableId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -253,6 +305,7 @@ export type RowUncheckedUpdateInput = {
 
 export type RowCreateManyInput = {
   id?: string
+  order?: number
   tableId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -260,12 +313,14 @@ export type RowCreateManyInput = {
 
 export type RowUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RowUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   tableId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -283,13 +338,19 @@ export type RowOrderByRelationAggregateInput = {
 
 export type RowCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  order?: Prisma.SortOrder
   tableId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
+export type RowAvgOrderByAggregateInput = {
+  order?: Prisma.SortOrder
+}
+
 export type RowMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  order?: Prisma.SortOrder
   tableId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -297,9 +358,14 @@ export type RowMaxOrderByAggregateInput = {
 
 export type RowMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  order?: Prisma.SortOrder
   tableId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type RowSumOrderByAggregateInput = {
+  order?: Prisma.SortOrder
 }
 
 export type RowScalarRelationFilter = {
@@ -365,6 +431,7 @@ export type RowUpdateOneRequiredWithoutCellsNestedInput = {
 
 export type RowCreateWithoutTableInput = {
   id?: string
+  order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   cells?: Prisma.CellCreateNestedManyWithoutRowInput
@@ -372,6 +439,7 @@ export type RowCreateWithoutTableInput = {
 
 export type RowUncheckedCreateWithoutTableInput = {
   id?: string
+  order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   cells?: Prisma.CellUncheckedCreateNestedManyWithoutRowInput
@@ -408,6 +476,7 @@ export type RowScalarWhereInput = {
   OR?: Prisma.RowScalarWhereInput[]
   NOT?: Prisma.RowScalarWhereInput | Prisma.RowScalarWhereInput[]
   id?: Prisma.StringFilter<"Row"> | string
+  order?: Prisma.IntFilter<"Row"> | number
   tableId?: Prisma.StringFilter<"Row"> | string
   createdAt?: Prisma.DateTimeFilter<"Row"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Row"> | Date | string
@@ -415,6 +484,7 @@ export type RowScalarWhereInput = {
 
 export type RowCreateWithoutCellsInput = {
   id?: string
+  order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   table: Prisma.TableCreateNestedOneWithoutRowsInput
@@ -422,6 +492,7 @@ export type RowCreateWithoutCellsInput = {
 
 export type RowUncheckedCreateWithoutCellsInput = {
   id?: string
+  order?: number
   tableId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -445,6 +516,7 @@ export type RowUpdateToOneWithWhereWithoutCellsInput = {
 
 export type RowUpdateWithoutCellsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   table?: Prisma.TableUpdateOneRequiredWithoutRowsNestedInput
@@ -452,6 +524,7 @@ export type RowUpdateWithoutCellsInput = {
 
 export type RowUncheckedUpdateWithoutCellsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   tableId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -459,12 +532,14 @@ export type RowUncheckedUpdateWithoutCellsInput = {
 
 export type RowCreateManyTableInput = {
   id?: string
+  order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type RowUpdateWithoutTableInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cells?: Prisma.CellUpdateManyWithoutRowNestedInput
@@ -472,6 +547,7 @@ export type RowUpdateWithoutTableInput = {
 
 export type RowUncheckedUpdateWithoutTableInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cells?: Prisma.CellUncheckedUpdateManyWithoutRowNestedInput
@@ -479,6 +555,7 @@ export type RowUncheckedUpdateWithoutTableInput = {
 
 export type RowUncheckedUpdateManyWithoutTableInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -516,6 +593,7 @@ export type RowCountOutputTypeCountCellsArgs<ExtArgs extends runtime.Types.Exten
 
 export type RowSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  order?: boolean
   tableId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -526,6 +604,7 @@ export type RowSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 
 export type RowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  order?: boolean
   tableId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -534,6 +613,7 @@ export type RowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
 
 export type RowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  order?: boolean
   tableId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -542,12 +622,13 @@ export type RowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
 
 export type RowSelectScalar = {
   id?: boolean
+  order?: boolean
   tableId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tableId" | "createdAt" | "updatedAt", ExtArgs["result"]["row"]>
+export type RowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "order" | "tableId" | "createdAt" | "updatedAt", ExtArgs["result"]["row"]>
 export type RowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   table?: boolean | Prisma.TableDefaultArgs<ExtArgs>
   cells?: boolean | Prisma.Row$cellsArgs<ExtArgs>
@@ -568,6 +649,7 @@ export type $RowPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    order: number
     tableId: string
     createdAt: Date
     updatedAt: Date
@@ -997,6 +1079,7 @@ export interface Prisma__RowClient<T, Null = never, ExtArgs extends runtime.Type
  */
 export interface RowFieldRefs {
   readonly id: Prisma.FieldRef<"Row", 'String'>
+  readonly order: Prisma.FieldRef<"Row", 'Int'>
   readonly tableId: Prisma.FieldRef<"Row", 'String'>
   readonly createdAt: Prisma.FieldRef<"Row", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Row", 'DateTime'>
