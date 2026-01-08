@@ -24,7 +24,7 @@ export type TableProviderState = {
 
   handleAddRow: (orderNum: number, tableId: string) => void;
   handleDeleteRow: (rowId: string) => void;
-  handleAddColumn: (tableId: string, label: string, type: ColumnType) => void;
+  handleAddColumn: (orderNum: number, tableId: string, label: string, type: ColumnType) => void;
   handleDeleteColumn: (columnId: string) => void;
   handleRenameColumn: (columnId: string, newLabel: string) => void;
 
@@ -78,8 +78,26 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
   });
 
   const addRowMutation = trpc.table.addRow.useMutation({
-    onError: (error) => {
+    onSuccess: ({ row, cells, optimisticId }) => {
+      // 1. Replace row ID
+      setRows(prev =>
+        prev.map(r => r.id === optimisticId ? {...row, optimistic: false } : r)
+      );
+
+      // 2. Replace cell keys
+      setCells(prev => {
+        const next: CellMap = {};
+        for (const [key, value] of Object.entries(prev)) {
+          const [rId, colId] = key.split(":");
+          const newRowId = rId === optimisticId ? row.id : rId;
+          next[`${newRowId}:${colId}`] = value;
+        }
+        return next;
+      });
+    },
+    onError: (error, { optimisticId }) => {
       console.error("Failed to add row:", error);
+      setRows(prev => prev.filter(r => r.id !== optimisticId));
     },
   });
 
@@ -90,10 +108,38 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
   });
 
   const addColumnMutation = trpc.table.addColumn.useMutation({
-    onError: (error) => {
+    onSuccess: ({ column, optimisticId }) => {
+      // 1. Replace column ID
+      setColumns(prev => prev.map(c => c.id === optimisticId ? { id: column.id, label: column.name, 
+        type: column.type as ColumnType, order: column.order, optimistic: false } : c));
+
+      // 2. Replace column IDs inside cell keys
+      setCells(prev => {
+        const next: CellMap = {};
+        for (const [key, value] of Object.entries(prev)) {
+          const [rowId, colId] = key.split(":");
+          const newColId = colId === optimisticId ? column.id : colId;
+          next[`${rowId}:${newColId}`] = value;
+        }
+        return next;
+      });
+    },
+
+    onError: (error, { optimisticId }) => {
       console.error("Failed to add column:", error);
+      // rollback optimistic column
+      setColumns(prev => prev.filter(c => c.id !== optimisticId));
+      setCells(prev => {
+        const next: CellMap = {};
+        for (const [key, value] of Object.entries(prev)) {
+          const [, colId] = key.split(":");
+          if (colId !== optimisticId) next[key] = value;
+        }
+        return next;
+      });
     },
   });
+
 
   const deleteColumnMutation = trpc.table.deleteColumn.useMutation({
     onError: (error) => {
@@ -161,7 +207,6 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
 
       // Queue for batch update
       pendingCellUpdatesRef.current.push({ rowId, columnId, value: newValue });
-
       // Debounce sending
       if (batchTimerRef.current) clearTimeout(batchTimerRef.current);
       batchTimerRef.current = setTimeout(flushCellUpdates, DEFAULT_BATCH_DELAY); // 500ms debounce
@@ -205,17 +250,17 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
   }, [deleteRowMutation, scheduleLongFlush]);
 
   const handleAddRow = useCallback((orderNum: number, tableId: string) => {
-    const newId = `row-${crypto.randomUUID()}`;
-    const newRow: TableRow = { id: newId, order: orderNum };
+    const optimisticId = `optimistic-row-${crypto.randomUUID()}`;
+    const newRow: TableRow = { id: optimisticId, order: orderNum, optimistic: true };
     setRows(prev => [...prev, newRow]);
     setCells(prev => {
       const newCells = { ...prev };
       columns.forEach(col => {
-        newCells[`${newId}:${col.id}`] = "";
+        newCells[`${optimisticId}:${col.id}`] = "";
       });
       return newCells;
     });
-    addRowMutation.mutate({ tableId, orderNum });
+    addRowMutation.mutate({ tableId: tableId, orderNum: orderNum, optimisticId: optimisticId });
 
     //Delay flush to avoid Foreign Key violation issues
     scheduleLongFlush();
@@ -224,20 +269,20 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
   // -----------------------
   // Column operations
   // -----------------------
-  const handleAddColumn = useCallback((tableId: string, label: string, type: ColumnType) => {
-    const newId = `col-${crypto.randomUUID()}`;
-    const newCol: Column = { id: newId, label: label, type: type };
+  const handleAddColumn = useCallback((orderNum: number, tableId: string, label: string, type: ColumnType) => {
+    const optimisticId = `optimistic-col-${crypto.randomUUID()}`;
+    const newCol: Column = { id: optimisticId, label: label, order: orderNum, type: type, optimistic: true };
     setColumns(prev => [...prev, newCol]);
 
     // initialize cells for new column
     setCells(prev => {
       const newCells = { ...prev };
       rows.forEach(row => {
-        newCells[`${row.id}:${newId}`] = "";
+        newCells[`${row.id}:${optimisticId}`] = "";
       });
       return newCells;
     });
-    addColumnMutation.mutate({ tableId, label, type });
+    addColumnMutation.mutate({ tableId: tableId, label: label, orderNum: orderNum, type: type, optimisticId: optimisticId });
 
     //Delay flush to avoid Foreign Key violation issues
     scheduleLongFlush();

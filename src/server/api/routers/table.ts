@@ -100,12 +100,21 @@ export const tableRouter = createTRPCRouter({
       const rows = await ctx.db.row.findMany();
       const rowSet = new Set(rows.map(r => r.id));
 
+      console.log(rowSet);
+
       // Build PrismaPromises array
       const updates: ReturnType<typeof ctx.db.cell.upsert>[] = [];
       for (const { rowId, columnId, value } of input) {
-        if (!rowSet.has(rowId)) continue; 
+        console.log(rowId)
+        if (!rowSet.has(rowId)){
+          console.error("No ROW");
+          continue;
+        }; 
         const columnType = columnMap.get(columnId);
-        if (!columnType) continue;
+        if (!columnType){
+          console.error("No COLTYPE");
+          continue;
+        };
 
         let newValue: string;
         if (columnType === "number") {
@@ -136,7 +145,7 @@ export const tableRouter = createTRPCRouter({
 
 
   addRow: protectedProcedure
-    .input(z.object({ tableId: z.string(), orderNum: z.number() }))
+    .input(z.object({ tableId: z.string(), orderNum: z.number(), optimisticId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       //1. Create the row
       const newRow = await ctx.db.row.create({
@@ -152,8 +161,8 @@ export const tableRouter = createTRPCRouter({
       }));
 
       await ctx.db.cell.createMany({ data: cells });
-
-      return { row: newRow, cells };
+      
+      return { row: newRow, cells, optimisticId: input.optimisticId };
     }),
 
   deleteRow: protectedProcedure
@@ -165,7 +174,7 @@ export const tableRouter = createTRPCRouter({
     }),
 
   addColumn: protectedProcedure
-    .input(z.object({ tableId: z.string(), label: z.string().optional(), type: z.enum(["text", "number"]).optional() }))
+    .input(z.object({ tableId: z.string(), label: z.string().optional(), type: z.enum(["text", "number"]).optional(), optimisticId: z.string(), orderNum: z.number() }))
     .mutation(async ({ ctx, input }) => {
       //1. Create column
       const newColumn = await ctx.db.column.create({
@@ -173,7 +182,7 @@ export const tableRouter = createTRPCRouter({
           tableId: input.tableId,
           name: input.label ?? `Column`,
           type: input.type ?? "text",
-          order: Date.now(),
+          order: input.orderNum,
         },
       });
 
@@ -186,7 +195,7 @@ export const tableRouter = createTRPCRouter({
       }));
       await ctx.db.cell.createMany({ data: cells });
 
-      return { column: newColumn, cells };
+      return { column: newColumn, cells, optimisticId: input.optimisticId };
     }),
 
   deleteColumn: protectedProcedure

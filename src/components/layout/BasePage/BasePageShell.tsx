@@ -26,14 +26,15 @@ export function BasePageShell() {
 
   const initialRows = rowsQuery.data.rows.map((row, index) => ({
     id: row.id,
-    order: index,
+    order: (index + 1),
   }))
 
   const initialCells = backendCells as CellMap;
 
-  const initialColumns = columnsQuery.data.columns.map((col) => ({
+  const initialColumns = columnsQuery.data.columns.map((col, index) => ({
     id: col.id,
     label: col.name,
+    order: (index + 1),
     type: col.type as ColumnType
   }))
 

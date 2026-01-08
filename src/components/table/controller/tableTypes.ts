@@ -7,13 +7,16 @@ export type ColumnType = "text" | "number";
 export type Column = {
   id: string;
   label: string;
+  order: number;
   type: ColumnType;
   width?: number;
+  optimistic?: boolean;
 };
 
 export type Row = {
   id: string;
   order: number;
+  optimistic?: boolean;
 };
 
 export type TableRow = Row;

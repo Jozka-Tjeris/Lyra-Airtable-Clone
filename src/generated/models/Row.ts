@@ -269,7 +269,7 @@ export type RowScalarWhereWithAggregatesInput = {
 
 export type RowCreateInput = {
   id?: string
-  order?: number
+  order: number
   createdAt?: Date | string
   updatedAt?: Date | string
   table: Prisma.TableCreateNestedOneWithoutRowsInput
@@ -278,7 +278,7 @@ export type RowCreateInput = {
 
 export type RowUncheckedCreateInput = {
   id?: string
-  order?: number
+  order: number
   tableId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -305,7 +305,7 @@ export type RowUncheckedUpdateInput = {
 
 export type RowCreateManyInput = {
   id?: string
-  order?: number
+  order: number
   tableId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -431,7 +431,7 @@ export type RowUpdateOneRequiredWithoutCellsNestedInput = {
 
 export type RowCreateWithoutTableInput = {
   id?: string
-  order?: number
+  order: number
   createdAt?: Date | string
   updatedAt?: Date | string
   cells?: Prisma.CellCreateNestedManyWithoutRowInput
@@ -439,7 +439,7 @@ export type RowCreateWithoutTableInput = {
 
 export type RowUncheckedCreateWithoutTableInput = {
   id?: string
-  order?: number
+  order: number
   createdAt?: Date | string
   updatedAt?: Date | string
   cells?: Prisma.CellUncheckedCreateNestedManyWithoutRowInput
@@ -484,7 +484,7 @@ export type RowScalarWhereInput = {
 
 export type RowCreateWithoutCellsInput = {
   id?: string
-  order?: number
+  order: number
   createdAt?: Date | string
   updatedAt?: Date | string
   table: Prisma.TableCreateNestedOneWithoutRowsInput
@@ -492,7 +492,7 @@ export type RowCreateWithoutCellsInput = {
 
 export type RowUncheckedCreateWithoutCellsInput = {
   id?: string
-  order?: number
+  order: number
   tableId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -532,7 +532,7 @@ export type RowUncheckedUpdateWithoutCellsInput = {
 
 export type RowCreateManyTableInput = {
   id?: string
-  order?: number
+  order: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
