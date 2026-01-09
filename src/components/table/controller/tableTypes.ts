@@ -8,11 +8,24 @@ export type Column = {
   id: string;
   label: string;
   order: number;
-  type: ColumnType;
+  columnType: ColumnType;
   width?: number;
   optimistic?: boolean;
   internalId?: string;
 };
+
+export const COLUMN_CONFIG = {
+  text: {
+    label: 'Text',
+    icon: 'A',
+    align: 'text-left',
+  },
+  number: {
+    label: 'Number',
+    icon: '#',
+    align: 'text-left',
+  },
+} as const;
 
 export type Row = {
   id: string;

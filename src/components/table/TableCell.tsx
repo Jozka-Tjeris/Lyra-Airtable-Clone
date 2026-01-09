@@ -31,6 +31,8 @@ export const TableCell = memo(function TableCell({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const isNumber = columnType === "number";
+
   // --- REFS FOR RELIABLE COMMITTING ---
   const localValueRef = useRef(localValue);
   const isEditingRef = useRef(isEditing);
@@ -76,7 +78,6 @@ export const TableCell = memo(function TableCell({
 
   // --- STABLE COMMIT LOGIC ---
   const commit = useCallback(() => {
-    // Use Ref to check editing state to avoid stale closure
     if (!isEditingRef.current || isCommittingRef.current || isCancellingRef.current) return;
     
     const valueToCommit = localValueRef.current;
@@ -84,14 +85,20 @@ export const TableCell = memo(function TableCell({
 
     let finalValue: CellValue = valueToCommit;
     if (columnType === "number") {
-      const num = Number(valueToCommit);
-      if (isNaN(num)) {
-        setLocalValue(value ?? ""); 
-        setIsEditing(false);
-        isCommittingRef.current = false;
-        return;
+      //Handle empty input
+      if (valueToCommit === "") {
+        finalValue = "";
+      } else {
+        //Only convert to Number if it's not empty
+        const num = Number(valueToCommit);
+        if (isNaN(num)) {
+          setLocalValue(value ?? ""); 
+          setIsEditing(false);
+          isCommittingRef.current = false;
+          return;
+        }
+        finalValue = num;
       }
-      finalValue = num;
     }
 
     if (finalValue !== value) {

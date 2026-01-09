@@ -178,7 +178,7 @@ export const tableRouter = createTRPCRouter({
       const column = await ctx.db.column.findUnique({ where: { id: input.columnId } });
       if (!column) throw new TRPCError({ code: "NOT_FOUND", message: "Column not found" });
 
-      if (column.type === "number") {
+      if (column.columnType === "number") {
         const numericValue = Number(input.value);
         if (isNaN(numericValue)) throw new TRPCError({ code: "BAD_REQUEST", message: "Value must be a number" });
         input.value = numericValue.toString();
@@ -206,7 +206,7 @@ export const tableRouter = createTRPCRouter({
       const columns = await ctx.db.column.findMany({ where: { id: { in: columnIds } } });
 
       //Build a map for quick lookup
-      const columnMap = new Map(columns.map(c => [c.id, c.type]));
+      const columnMap = new Map(columns.map(c => [c.id, c.columnType]));
 
       //Get all rows in a single query
       const rows = await ctx.db.row.findMany();
@@ -326,7 +326,7 @@ export const tableRouter = createTRPCRouter({
             data: {
               tableId: input.tableId,
               name: input.label ?? "Column",
-              type: input.type ?? "text",
+              columnType: input.type ?? "text",
               order: input.orderNum,
             },
           });

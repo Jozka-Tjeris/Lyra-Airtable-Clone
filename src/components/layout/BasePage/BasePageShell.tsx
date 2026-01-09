@@ -35,7 +35,7 @@ export function BasePageShell() {
     id: col.id,
     label: col.name,
     order: (index + 1),
-    type: col.type as ColumnType
+    columnType: col.columnType as ColumnType
   }))
 
   return <TableProvider

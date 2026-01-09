@@ -1352,7 +1352,7 @@ export type TableScalarFieldEnum = (typeof TableScalarFieldEnum)[keyof typeof Ta
 export const ColumnScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  type: 'type',
+  columnType: 'columnType',
   tableId: 'tableId',
   order: 'order',
   createdAt: 'createdAt',

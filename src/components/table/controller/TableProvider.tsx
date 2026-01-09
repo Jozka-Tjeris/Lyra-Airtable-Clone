@@ -8,7 +8,7 @@ import type { Column, Row, CellMap, CellValue, TableRow, ColumnType } from "./ta
 import { TableCell } from "../TableCell";
 import { api as trpc } from "~/trpc/react";
 
-export const TEST_TABLE_ID = "cmk5beznr0002gartzrg6rpy3";
+export const TEST_TABLE_ID = "cmk6ox8lz0002nrrt9mv2pg6z";
 
 export type TableProviderState = {
   rows: TableRow[];
@@ -52,7 +52,7 @@ type TableProviderProps = {
 export function TableProvider({ children, initialRows, initialColumns, initialCells, initialGlobalSearch = "" }: TableProviderProps) {
   // 1. Initialize with stable internal IDs
   const [rows, setRows] = useState<TableRow[]>(() => initialRows.map(r => ({ ...r, internalId: r.id })));
-  const [columns, setColumns] = useState<Column[]>(() => initialColumns.map(c => ({ ...c, internalId: c.id })));
+  const [columns, setColumns] = useState<Column[]>(() => initialColumns.map(c => ({ ...c, internalId: c.id, columnType: c.columnType })));
   const [cells, setCells] = useState<CellMap>(initialCells);
   
   const [activeCell, setActiveCell] = useState<{ rowId: string; columnId: string } | null>(null);
@@ -91,7 +91,7 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
     onSuccess: ({ column, optimisticId }) => {
       setColumns(prev => prev.map(c => 
         c.id === optimisticId 
-          ? { id: column.id, internalId: optimisticId, label: column.name, type: column.type as ColumnType, order: column.order, optimistic: false } 
+          ? { id: column.id, internalId: optimisticId, label: column.name, columnType: column.columnType as ColumnType, order: column.order, optimistic: false } 
           : c
       ));
     },
@@ -134,7 +134,7 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
 
   const handleAddColumn = useCallback((orderNum: number, tableId: string, label: string, type: ColumnType) => {
     const optimisticId = `optimistic-col-${crypto.randomUUID()}`;
-    setColumns(prev => [...prev, { id: optimisticId, internalId: optimisticId, label, order: orderNum, type, optimistic: true }]);
+    setColumns(prev => [...prev, { id: optimisticId, internalId: optimisticId, label, order: orderNum, columnType: type, optimistic: true }]);
     addColumnMutation.mutate({ tableId, label, orderNum, type, optimisticId });
   }, [addColumnMutation]);
 
@@ -184,11 +184,13 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
   const tableColumns: ColumnDef<any>[] = useMemo(() => {
     return columns.map((col) => {
       const colId = col.internalId ?? col.id;
+      const resolvedType = (col.columnType ||  "text") as ColumnType;
       return {
         id: colId,
         accessorKey: colId,
         header: col.label,
         size: col.width ?? 150,
+        meta: { columnType: resolvedType },
         cell: info => {
           const rowElem = info.row.original;
           const rId = rowElem.internalId || rowElem.id;
@@ -200,7 +202,7 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
               value={cells[cellKey] ?? ""}
               rowId={rId}
               columnId={colId}
-              columnType={col.type}
+              columnType={resolvedType}
               onClick={() => setActiveCell({ rowId: rId, columnId: colId })}
               onChange={value => updateCell(rId, colId, value)}
               registerRef={registerRef}
