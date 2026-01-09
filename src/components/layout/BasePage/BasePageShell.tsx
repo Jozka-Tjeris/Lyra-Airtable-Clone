@@ -11,8 +11,8 @@ import { api as trpc } from "~/trpc/react";
 import type { CellMap, ColumnType } from "~/components/table/controller/tableTypes";
 
 export function BasePageShell() {
-  const rowsQuery = trpc.table.getRowsWithCells.useQuery({ tableId: TEST_TABLE_ID });
-  const columnsQuery = trpc.table.getColumns.useQuery({ tableId: TEST_TABLE_ID });
+  const rowsQuery = trpc.row.getRowsWithCells.useQuery({ tableId: TEST_TABLE_ID });
+  const columnsQuery = trpc.column.getColumns.useQuery({ tableId: TEST_TABLE_ID });
 
   if (rowsQuery.isLoading || columnsQuery.isLoading) {
     return <div>Loading table…</div>;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useMemo, type ReactNode, useRef, useEffect, type SetStateAction } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo, type ReactNode, useRef, useEffect } from "react";
 import { useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type ColumnDef,
   type SortingState, type ColumnFiltersState, type VisibilityState, type ColumnSizingState,
  } from "@tanstack/react-table";
@@ -73,9 +73,9 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
   // -----------------------
   // tRPC mutations
   // -----------------------
-  const updateCellsMutation = trpc.table.updateCells.useMutation();
+  const updateCellsMutation = trpc.cell.updateCells.useMutation();
 
-  const addRowMutation = trpc.table.addRow.useMutation({
+  const addRowMutation = trpc.row.addRow.useMutation({
     onSuccess: ({ row, optimisticId }) => {
       setRows(prev => prev.map(r => 
         r.id === optimisticId ? { ...row, internalId: optimisticId, optimistic: false } : r
@@ -87,7 +87,7 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
     },
   });
 
-  const addColumnMutation = trpc.table.addColumn.useMutation({
+  const addColumnMutation = trpc.column.addColumn.useMutation({
     onSuccess: ({ column, optimisticId }) => {
       setColumns(prev => prev.map(c => 
         c.id === optimisticId 
@@ -100,9 +100,9 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
     },
   });
 
-  const deleteRowMutation = trpc.table.deleteRow.useMutation();
-  const deleteColumnMutation = trpc.table.deleteColumn.useMutation();
-  const renameColumnMutation = trpc.table.renameColumn.useMutation();
+  const deleteRowMutation = trpc.row.deleteRow.useMutation();
+  const deleteColumnMutation = trpc.column.deleteColumn.useMutation();
+  const renameColumnMutation = trpc.column.renameColumn.useMutation();
 
   // -----------------------
   // Cell updates
