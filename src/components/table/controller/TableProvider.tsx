@@ -251,6 +251,10 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
       });
       return updated;
     });
+
+    // Remove pending updates for this row to prevent ghosts
+    pendingCellUpdatesRef.current = pendingCellUpdatesRef.current.filter(u => u.rowId !== rowId);
+
     deleteRowMutation.mutate(
       { tableId, rowId },
       {
@@ -276,6 +280,10 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
       });
       return newCells;
     });
+
+    // Remove any pending cell updates for this new row (safety)
+    pendingCellUpdatesRef.current = pendingCellUpdatesRef.current.filter(u => u.rowId !== optimisticId);
+
     addRowMutation.mutate(
       { tableId, orderNum, optimisticId },
       {
@@ -305,6 +313,10 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
       });
       return newCells;
     });
+
+    // Remove pending updates for this column (safety)
+    pendingCellUpdatesRef.current = pendingCellUpdatesRef.current.filter(u => u.columnId !== optimisticId);
+
     addColumnMutation.mutate(
       { tableId, label, orderNum, type, optimisticId },
       {
@@ -328,6 +340,10 @@ export function TableProvider({ children, initialRows, initialColumns, initialCe
       });
       return updated;
     });
+
+    // Remove pending updates for this column
+    pendingCellUpdatesRef.current = pendingCellUpdatesRef.current.filter(u => u.columnId !== columnId);
+
     deleteColumnMutation.mutate(
       { tableId, columnId },
       {
