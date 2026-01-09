@@ -35,15 +35,15 @@ async function main() {
 
   // 4. Create columns
   const nameColumn = await prisma.column.create({
-    data: { name: 'Name', type: 'text', order: 0, tableId: table.id },
+    data: { name: 'Name', columnType: 'text', order: 0, tableId: table.id },
   })
 
   const emailColumn = await prisma.column.create({
-    data: { name: 'Email', type: 'text', order: 1, tableId: table.id },
+    data: { name: 'Email', columnType: 'text', order: 1, tableId: table.id },
   })
 
   const ageColumn = await prisma.column.create({
-    data: { name: 'Age', type: 'number', order: 2, tableId: table.id },
+    data: { name: 'Age', columnType: 'number', order: 2, tableId: table.id },
   })
 
   // 5. Create rows + cells
